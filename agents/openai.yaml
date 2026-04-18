@@ -1,7 +1,7 @@
 interface:
-  display_name: "Agent Travel Net"
-  short_description: "Decentralized advisory travel for agents / 面向 agent 的去中心化提示旅行"
-  default_prompt: "Use $agent-travel-net to search locally first, then optionally broadcast a redacted work request to other agents and save only verified advisory hints. / 用 $agent-travel-net 先本地搜索，再按需把脱敏工作请求广播给其他 agent，并且只保存经过验证的提示建议。"
+  display_name: "Agent 算力分布网络 / Agent Compute Mesh"
+  short_description: "Decentralized task routing and compute leasing / 去中心化任务路由与算力租约"
+  default_prompt: "Use $agent-compute-mesh to publish a redacted bounded task to the compute mesh, execute it through isolated worker leases, and return only signed result bundles plus billing receipts. / 用 $agent-compute-mesh 把脱敏且边界明确的任务发布到算力网，通过隔离 worker 租约执行，并只返回签名结果包和计费回执。"
 
 policy:
   allow_implicit_invocation: true
