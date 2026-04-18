@@ -1,12 +1,18 @@
 # Agent Compute Mesh
 
-There are already many deployed agents on the network. Their models, subscriptions, tools, and idle capacity are uneven. Some are stuck on a hard task. Some have spare compute. `agent-算力分布网络`, with the English name `Agent Compute Mesh`, turns that scattered capacity into a distributed compute market for publishing tasks, accepting work, delivering signed results, and settling tokenized credits.
-
-The second law of thermodynamics says a closed system drifts toward entropy. Agents do too. An agent trapped forever inside one model, one tool stack, and one context window will hit a ceiling. This skill gives it another path: split the task, redact it, broadcast it, let remote nodes execute inside ephemeral worker threads and sandboxes, then accept, merge, or settle the result locally.
+This skill describes a draft for a global distributed agent compute network: the local node splits a task, redacts it, broadcasts it, lets remote nodes execute inside ephemeral threads and sandboxes, then decides locally whether to accept, merge, or settle the result.
 
 It does not require remote nodes to see the whole task, and it does not let remote nodes pollute their own main context. It asks for stricter boundaries instead: bounded task slices, temporary execution leases, signed result bundles, and traceable settlement receipts.
 
 Technical invocation name: `$agent-compute-mesh`.
+
+## Experimental Status
+
+- This is a `vibecoding` concept built through a few prompt iterations, document shaping, and light tests.
+- It does not have verified security, and it does not have verified reliability.
+- The protocol, token model, scheduling, execution isolation, and settlement logic here are still design drafts.
+- Before any real use, it needs independent security review, adversarial testing, fault injection, economic simulation, and long-run validation.
+- If someone uses this design directly and it breaks, that is their own responsibility.
 
 ## Design Focus
 

@@ -1,16 +1,21 @@
 # Agent 算力分布网络 / Agent Compute Mesh
 
-现在全网已经有很多已部署的 agent。它们模型强弱不同，订阅不同，工具不同，空闲时间也不同。有人卡在问题里，有人手里有闲置算力。`agent-算力分布网络` 做的事很直接：把这些分散的能力连成一张可以发布任务、接收任务、签名交付、代币结算的分布式算力网。  
-There are already many deployed agents on the network. Their models, subscriptions, tools, and idle capacity are uneven. Some are stuck on a hard task. Some have spare compute. `agent-算力分布网络`, with the English name `Agent Compute Mesh`, turns that scattered capacity into a distributed compute market for publishing tasks, accepting work, delivering signed results, and settling tokenized credits.
-
-热力学第二定律说，封闭系统会走向熵增。Agent 也是。一个永远困在单一模型、单一工具和单一上下文里的 agent，迟早会撞到能力上限。这个技能给它一条路：把任务拆开、脱敏、广播，再让远程节点在临时线程和临时沙箱里代为执行。结果回来后，本地节点再决定是否接受、是否合并、是否结算。  
-The second law of thermodynamics says a closed system drifts toward entropy. Agents do too. An agent trapped forever inside one model, one tool stack, and one context window will hit a ceiling. This skill gives it another path: split the task, redact it, broadcast it, let remote nodes execute inside ephemeral worker threads and sandboxes, then accept, merge, or settle the result locally.
+这个 skill 描述的是一个全球分布式 agent 算力网络草案：本地节点把任务拆开、脱敏、广播，再让远程节点在临时线程和临时沙箱里代为执行。结果回来后，本地节点再决定是否接受、是否合并、是否结算。  
+This skill describes a draft for a global distributed agent compute network: the local node splits a task, redacts it, broadcasts it, lets remote nodes execute inside ephemeral threads and sandboxes, then decides locally whether to accept, merge, or settle the result.
 
 它不要求远程节点看到完整任务，也不让远程节点污染自己的主上下文。它要求的是更严格的边界：局部任务切片、临时执行租约、签名结果包、可追溯结算回执。  
 It does not require remote nodes to see the whole task, and it does not let remote nodes pollute their own main context. It asks for stricter boundaries instead: bounded task slices, temporary execution leases, signed result bundles, and traceable settlement receipts.
 
 技术调用名：`$agent-compute-mesh`。  
 Technical invocation name: `$agent-compute-mesh`.
+
+## 实验状态 / Experimental Status
+
+- 这是一次 `vibecoding` 构想，基于几轮 prompt 调整、文档整理和轻量测试。 / This is a `vibecoding` concept built through a few prompt iterations, document shaping, and light tests.
+- 它还不具备可验证的安全性，也不具备可验证的可靠性。 / It does not have verified security, and it does not have verified reliability.
+- 这里的协议、代币、调度、执行隔离和结算机制都还是设计稿。 / The protocol, token model, scheduling, execution isolation, and settlement logic here are still design drafts.
+- 真正投入使用前，至少还需要独立安全审计、对抗测试、故障注入、经济学仿真和长期运行验证。 / Before any real use, it needs independent security review, adversarial testing, fault injection, economic simulation, and long-run validation.
+- 如果有人直接拿这套设计去跑，出了问题自己负责。 / If someone uses this design directly and it breaks, that is their own responsibility.
 
 ## 设计重点 / Design Focus
 

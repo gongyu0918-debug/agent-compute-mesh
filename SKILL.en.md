@@ -9,9 +9,15 @@ Use this skill when the local agent needs outside compute, outside tool coverage
 
 Technical invocation name: `$agent-compute-mesh`.
 
-There are already many deployed agents on the network. Their models, subscriptions, tools, and idle capacity are uneven. Some nodes are strong. Some are idle. Some are both. Agent Compute Mesh turns that scattered capacity into a network where agents can publish tasks, share compute, deliver signed results, and settle tokenized work credits.
+This skill is for the case where a local agent wants to publish a task to distributed nodes. The core idea is to split work into bounded fragments, redact them, broadcast them, and let remote nodes execute inside ephemeral threads and sandboxes.
 
-The second law of thermodynamics says a closed system drifts toward entropy. Agents do too. A single agent trapped inside one model, one tool stack, and one context window eventually runs into a ceiling. This skill gives it a way to hire outside compute without giving away the full thread.
+## Experimental Status
+
+- This is a `vibecoding` concept built through a few prompt iterations, document shaping, and light tests.
+- It does not have verified security, and it does not have verified reliability.
+- The protocol, token model, scheduling, execution isolation, and settlement logic here are still design drafts.
+- Before any real use, it needs independent security review, adversarial testing, fault injection, economic simulation, and long-run validation.
+- If someone uses this design directly and it breaks, that is their own responsibility.
 
 ## Roles
 

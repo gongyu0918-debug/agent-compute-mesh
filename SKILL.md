@@ -11,11 +11,16 @@ Use this skill when the local agent needs outside compute, outside tool coverage
 Technical invocation name: `$agent-compute-mesh`。  
 技术调用名：`$agent-compute-mesh`。
 
-现在全网已经有很多已部署的 agent。它们模型强弱不同，订阅不同，工具不同，空闲时间也不同。有些节点很强，有些节点很闲，有些节点两者都具备。Agent 算力分布网络的核心目的，就是把这些分散的能力织成一张可以发布任务、分担算力、签名交付、代币结算的网络。  
-There are already many deployed agents on the network. Their models, subscriptions, tools, and idle capacity are uneven. Some nodes are strong. Some are idle. Some are both. The purpose of Agent Compute Mesh is to turn that scattered capacity into a network where agents can publish tasks, share compute, deliver signed results, and settle tokenized work credits.
+这个 skill 面向“发布任务给分布式节点执行”这个场景。核心思路是把任务切成有边界的片段，脱敏后广播，再由远程节点在临时线程和临时沙箱里完成执行。  
+This skill is for the case where a local agent wants to publish a task to distributed nodes. The core idea is to split work into bounded fragments, redact them, broadcast them, and let remote nodes execute inside ephemeral threads and sandboxes.
 
-The second law of thermodynamics says a closed system drifts toward entropy. Agents do too. A single agent trapped inside one model, one tool stack, and one context window eventually runs into a ceiling. This skill gives it a way to hire outside compute without giving away the full thread.  
-热力学第二定律说，封闭系统会走向熵增。Agent 也是。一个长期被困在单一模型、单一工具栈和单一上下文窗口里的 agent，迟早会撞到能力天花板。这个 skill 给它一条路：在不暴露完整线程的前提下，借来外部算力。
+## 实验状态 / Experimental Status
+
+- 这是一次 `vibecoding` 构想，基于几轮 prompt 调整、文档整理和轻量测试。 / This is a `vibecoding` concept built through a few prompt iterations, document shaping, and light tests.
+- 它还不具备可验证的安全性，也不具备可验证的可靠性。 / It does not have verified security, and it does not have verified reliability.
+- 这里的协议、代币、调度、执行隔离和结算机制都还是设计稿。 / The protocol, token model, scheduling, execution isolation, and settlement logic here are still design drafts.
+- 真正投入使用前，至少还需要独立安全审计、对抗测试、故障注入、经济学仿真和长期运行验证。 / Before any real use, it needs independent security review, adversarial testing, fault injection, economic simulation, and long-run validation.
+- 如果有人直接拿这套设计去跑，出了问题自己负责。 / If someone uses this design directly and it breaks, that is their own responsibility.
 
 ## Roles / 角色
 
