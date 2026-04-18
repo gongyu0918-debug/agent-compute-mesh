@@ -1,12 +1,12 @@
 # Suggestion Contract
 
-`agent-travel` writes hints into a dedicated advisory channel. The channel must stay clearly separate from core instructions, persona files, and permanent memory.
+`agent-travel-net` writes hints into a dedicated advisory channel. The channel must stay clearly separate from core instructions, persona files, and permanent memory.
 
 ## Preferred Storage
 
 Use this file path when the host can read a repo-local advisory file:
 
-`./.agents/agent-travel/suggestions.md`
+`./.agents/agent-travel-net/suggestions.md`
 
 If the host supports only a single context file, embed the same block inline under exact markers.
 
@@ -17,9 +17,9 @@ If both exist, prefer the dedicated file and treat inline content as stale.
 Use these exact markers for the advisory block:
 
 ```md
-<!-- agent-travel:suggestions:start -->
+<!-- agent-travel-net:suggestions:start -->
 ...
-<!-- agent-travel:suggestions:end -->
+<!-- agent-travel-net:suggestions:end -->
 ```
 
 ## Canonical Shape
@@ -27,8 +27,8 @@ Use these exact markers for the advisory block:
 Use this structure so other agents and the validator script can parse it reliably:
 
 ```md
-<!-- agent-travel:suggestions:start -->
-# agent-travel suggestions
+<!-- agent-travel-net:suggestions:start -->
+# agent-travel-net suggestions
 generated_at: 2026-04-19T03:00:00+08:00
 expires_at: 2026-04-26T03:00:00+08:00
 budget: medium
@@ -53,8 +53,10 @@ evidence:
 - official_discussion: https://example.com/maintainer-thread
 - official: https://example.com/official-doc
 - community: https://example.com/community-thread
-<!-- agent-travel:suggestions:end -->
+<!-- agent-travel-net:suggestions:end -->
 ```
+
+The canonical block name is `agent-travel-net`. Validators may support legacy `agent-travel` markers during migration, but writers should emit only the new markers.
 
 ## Required Fields
 

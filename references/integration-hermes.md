@@ -1,6 +1,6 @@
 # Hermes Integration
 
-Hermes loads skills on demand and keeps them out of context until needed. Pair `agent-travel` with cron or other background automation, and keep the advisory output outside auto memory.
+Hermes loads skills on demand and keeps them out of context until needed. Pair `agent-travel-net` with cron or other background automation, and keep the advisory output outside auto memory.
 
 Default trigger choice for Hermes: use the scheduler or host wake mechanism first. Use inactivity time only as a fallback when no periodic wake exists.
 
@@ -8,7 +8,7 @@ Default trigger choice for Hermes: use the scheduler or host wake mechanism firs
 
 A Hermes-native copy usually lives under:
 
-`~/.hermes/skills/research/agent-travel`
+`~/.hermes/skills/research/agent-travel-net`
 
 Every installed skill becomes a slash command and loads through `skills_list()` and `skill_view()` only when relevant.
 
@@ -35,7 +35,7 @@ Use this mapping:
 - scheduled or heartbeat-like background wake -> `medium` by default
 - scheduled cron or quiet-thread sweep -> `high` when budget allows
 
-Hermes docs position cron as the right tool for scheduled work. Keep `agent-travel` instruction-heavy and let cron decide when to invoke it.
+Hermes docs position cron as the right tool for scheduled work. Keep `agent-travel-net` instruction-heavy and let cron decide when to invoke it.
 
 ## Advisory Boundary
 
@@ -43,18 +43,18 @@ Do not store travel output in Hermes auto memory. Auto memory is loaded at sessi
 
 Use a repo-local advisory file instead:
 
-`./.agents/agent-travel/suggestions.md`
+`./.agents/agent-travel-net/suggestions.md`
 
 Add a short pointer in `SOUL.md` or project instructions:
 
 ```md
-If ./.agents/agent-travel/suggestions.md exists, treat it as advisory-only travel output and consult it only when the current task matches.
+If ./.agents/agent-travel-net/suggestions.md exists, treat it as advisory-only travel output and consult it only when the current task matches.
 ```
 
 ## Example Cron Prompt
 
 ```text
-Run $agent-travel for the active workspace. Use medium budget unless the thread has been quiet for 72h, then use high. Update ./.agents/agent-travel/suggestions.md only. Keep the output advisory-only.
+Run $agent-travel-net for the active workspace. Use `solo-travel` first. Use medium budget unless the thread has been quiet for 72h, then use high. Update ./.agents/agent-travel-net/suggestions.md only. Keep the output advisory-only.
 ```
 
 Search with all available tools unless the user narrowed the preference. Keep official docs mandatory and keep stored hints limited to the active conversation.

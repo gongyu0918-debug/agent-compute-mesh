@@ -1,6 +1,6 @@
 # OpenClaw Integration
 
-OpenClaw has first-class skills, heartbeat, cron, and hooks. `agent-travel` fits best as a background skill plus a separate advisory file.
+OpenClaw has first-class skills, heartbeat, cron, and hooks. `agent-travel-net` fits best as a background skill plus a separate advisory file.
 
 Default trigger choice for OpenClaw: use heartbeat first. Use inactivity-based travel only when heartbeat is disabled or the user explicitly prefers a quiet-time trigger.
 
@@ -8,8 +8,8 @@ Default trigger choice for OpenClaw: use heartbeat first. Use inactivity-based t
 
 Use one of these locations:
 
-- `<workspace>/skills/agent-travel`
-- `~/.openclaw/skills/agent-travel`
+- `<workspace>/skills/agent-travel-net`
+- `~/.openclaw/skills/agent-travel-net`
 
 Workspace skills have the highest precedence.
 
@@ -41,16 +41,17 @@ Why:
 ## Suggested HEARTBEAT.md Snippet
 
 ```md
-## Agent Travel
+## Agent Travel Net
 When there is no pending direct user request:
 1. Check whether the workspace has an unresolved blocker, repeated failure, or stale workaround.
-2. If yes, run $agent-travel with the budget implied by the trigger.
+2. If yes, run $agent-travel-net with the budget implied by the trigger.
 3. Use medium search by default and all available search tools unless the user set another preference.
 4. Cover official docs, official discussions, search engines, forums, and social signals when the available tools allow it.
 5. Keep only advisory-only hints that match the active conversation.
-6. Write advisory-only output to ./.agents/agent-travel/suggestions.md.
-7. Keep AGENTS.md, SOUL.md, and standing orders unchanged.
-8. Reply HEARTBEAT_OK when nothing qualifies.
+6. Use `solo-travel` first and use `travelnet` only when network_mode is enabled.
+7. Write advisory-only output to ./.agents/agent-travel-net/suggestions.md.
+8. Keep AGENTS.md, SOUL.md, and standing orders unchanged.
+9. Reply HEARTBEAT_OK when nothing qualifies.
 ```
 
 ## Event-Driven Use

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate the canonical agent-travel suggestion block."""
+"""Validate the canonical agent-travel-net suggestion block."""
 
 from __future__ import annotations
 
@@ -10,8 +10,10 @@ from datetime import datetime
 from pathlib import Path
 
 
-START = "<!-- agent-travel:suggestions:start -->"
-END = "<!-- agent-travel:suggestions:end -->"
+CANONICAL_START = "<!-- agent-travel-net:suggestions:start -->"
+CANONICAL_END = "<!-- agent-travel-net:suggestions:end -->"
+LEGACY_START = "<!-- agent-travel:suggestions:start -->"
+LEGACY_END = "<!-- agent-travel:suggestions:end -->"
 TOP_LEVEL_REQUIRED = {
     "generated_at",
     "expires_at",
@@ -75,12 +77,21 @@ def main() -> int:
         return fail([f"file not found: {path}"])
 
     text = path.read_text(encoding="utf-8")
-    start = text.find(START)
-    end = text.find(END)
-    if start == -1 or end == -1 or end <= start:
-        return fail(["missing or invalid agent-travel markers"])
+    start = text.rfind(CANONICAL_START)
+    end = text.rfind(CANONICAL_END)
+    marker_name = "agent-travel-net"
+    marker_len = len(CANONICAL_START)
 
-    block = text[start + len(START) : end].strip()
+    if start == -1 or end == -1 or end <= start:
+        start = text.rfind(LEGACY_START)
+        end = text.rfind(LEGACY_END)
+        marker_name = "agent-travel"
+        marker_len = len(LEGACY_START)
+
+    if start == -1 or end == -1 or end <= start:
+        return fail(["missing or invalid agent-travel-net markers"])
+
+    block = text[start + marker_len : end].strip()
     lines = [line.rstrip() for line in block.splitlines()]
 
     errors: list[str] = []
@@ -94,7 +105,9 @@ def main() -> int:
 
     for raw_line in lines:
         line = raw_line.strip()
-        if not line or line.startswith("# agent-travel suggestions"):
+        if not line or line.startswith("# agent-travel suggestions") or line.startswith(
+            "# agent-travel-net suggestions"
+        ):
             continue
         if heading_pattern.match(line):
             current = {"evidence": []}
@@ -211,6 +224,11 @@ def main() -> int:
     if errors:
         return fail(errors)
 
+    if marker_name == "agent-travel":
+        print(
+            "WARN: legacy agent-travel markers are accepted for validation but should be rewritten to agent-travel-net",
+            file=sys.stdout,
+        )
     print(
         f"OK: validated {len(suggestions)} suggestion(s) in {path}",
         file=sys.stdout,

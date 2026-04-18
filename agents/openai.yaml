@@ -1,7 +1,7 @@
 interface:
-  display_name: "Agent Travel"
-  short_description: "Background research with isolated advisory hints / 隔离式背景研究提示"
-  default_prompt: "Use $agent-travel to research an unresolved issue in the background and save only cross-validated advisory hints for a future task. / 用 $agent-travel 在后台研究未解决问题，只保存经过交叉验证、供后续任务参考的提示建议。"
+  display_name: "Agent Travel Net"
+  short_description: "Decentralized advisory travel for agents / 面向 agent 的去中心化提示旅行"
+  default_prompt: "Use $agent-travel-net to search locally first, then optionally broadcast a redacted work request to other agents and save only verified advisory hints. / 用 $agent-travel-net 先本地搜索，再按需把脱敏工作请求广播给其他 agent，并且只保存经过验证的提示建议。"
 
 policy:
   allow_implicit_invocation: true

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Offline ablation for agent-travel suggestion structure.
+"""Offline ablation for agent-travel-net suggestion structure.
 
 This script uses a few real local Codex session files as anchors, then compares:
 1. legacy suggestion shape without explicit rationale fields
@@ -37,15 +37,15 @@ SESSION_ROOT = Path.home() / ".codex"
 CASES: tuple[Case, ...] = (
     Case(
         case_id="travel_design",
-        label="Agent travel skill design",
+        label="Agent travel net skill design",
         session_path=SESSION_ROOT
         / "sessions/2026/04/19/rollout-2026-04-19T03-08-50-019da1fe-e5c0-7560-ad2c-a7d384eb9d11.jsonl",
         summary=(
-            "Design a lightweight agent-travel skill for OpenClaw and Hermes that "
+            "Design a lightweight agent-travel-net skill for OpenClaw and Hermes that "
             "uses heartbeat or idle windows to search official docs plus community "
             "sources, cross-validates each suggestion, and brings back advisory-only hints."
         ),
-        blocker_keywords=("agent-travel", "heartbeat", "openclaw", "hermes", "advisory"),
+        blocker_keywords=("agent-travel-net", "heartbeat", "openclaw", "hermes", "advisory"),
         constraint_keywords=("official", "cross-validate", "active thread", "lightweight"),
         legacy={
             "title": "Keep travel results advisory",
@@ -448,7 +448,7 @@ def main() -> int:
     args = parse_args()
     results = [evaluate_case(case) for case in CASES]
     report = {
-        "kind": "agent-travel-historical-codex-ablation",
+        "kind": "agent-travel-net-historical-codex-ablation",
         "note": (
             "Offline structural ablation against real local Codex session anchors. "
             "This measures how much explicit rationale fields improve next-turn readability "

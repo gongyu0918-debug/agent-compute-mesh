@@ -1,5 +1,5 @@
 {
-  "kind": "agent-travel-historical-codex-ablation",
+  "kind": "agent-travel-net-historical-codex-ablation",
   "note": "Offline structural ablation against real local Codex session anchors. This measures how much explicit rationale fields improve next-turn readability and retrieval fit. It does not simulate live web search latency.",
   "summary": {
     "cases": 4,
@@ -11,9 +11,9 @@
   "results": [
     {
       "case_id": "travel_design",
-      "label": "Agent travel skill design",
+      "label": "Agent travel net skill design",
       "source_session": ".codex/sessions/2026/04/19/rollout-2026-04-19T03-08-50-019da1fe-e5c0-7560-ad2c-a7d384eb9d11.jsonl",
-      "summary": "Design a lightweight agent-travel skill for OpenClaw and Hermes that uses heartbeat or idle windows to search official docs plus community sources, cross-validates each suggestion, and brings back advisory-only hints.",
+      "summary": "Design a lightweight agent-travel-net skill for OpenClaw and Hermes that uses heartbeat or idle windows to search official docs plus community sources, cross-validates each suggestion, and brings back advisory-only hints.",
       "legacy": {
         "suggestion": {
           "title": "Keep travel results advisory",
@@ -28,9 +28,8 @@
           ]
         },
         "scores": {
-          "source_grounding_score": 0.8,
+          "source_grounding_score": 0.6,
           "source_grounding_hits": [
-            "agent-travel",
             "heartbeat",
             "openclaw",
             "hermes"
@@ -75,9 +74,8 @@
           ]
         },
         "scores": {
-          "source_grounding_score": 0.8,
+          "source_grounding_score": 0.6,
           "source_grounding_hits": [
-            "agent-travel",
             "heartbeat",
             "openclaw",
             "hermes"

@@ -8,9 +8,9 @@ Default trigger choice for Codex: use app Automations first. Use inactivity-base
 
 Use one of these:
 
-- repo-scoped: `./.agents/skills/agent-travel`
-- user-scoped: `~/.agents/skills/agent-travel`
-- local curated Codex setup: `~/.codex/skills/agent-travel`
+- repo-scoped: `./.agents/skills/agent-travel-net`
+- user-scoped: `~/.agents/skills/agent-travel-net`
+- local curated Codex setup: `~/.codex/skills/agent-travel-net`
 
 Repo-scoped installs work best when the workflow belongs to the repository.
 
@@ -19,13 +19,13 @@ Repo-scoped installs work best when the workflow belongs to the repository.
 Add a small section instead of a long embedded manual:
 
 ```md
-## Agent Travel
-Read ./.agents/agent-travel/suggestions.md when the current task matches a recent unresolved blocker or background research note. Treat it as advisory-only. Re-check freshness before using any hint.
+## Agent Travel Net
+Read ./.agents/agent-travel-net/suggestions.md when the current task matches a recent unresolved blocker or background research note. Treat it as advisory-only. Re-check freshness before using any hint.
 ```
 
 Keep the actual advisory content in:
 
-`./.agents/agent-travel/suggestions.md`
+`./.agents/agent-travel-net/suggestions.md`
 
 This follows Codex guidance to keep `AGENTS.md` as a map rather than an encyclopedia.
 
@@ -38,7 +38,7 @@ Use medium search and all available search tools by default. Keep official docs 
 Use explicit invocation when you want a task-end retrospective:
 
 ```text
-Use $agent-travel to research the unresolved issue from the last task, keep the output advisory-only, and write it to ./.agents/agent-travel/suggestions.md.
+Use $agent-travel-net to research the unresolved issue from the last task, start with `solo-travel`, keep the output advisory-only, and write it to ./.agents/agent-travel-net/suggestions.md.
 ```
 
 ## Internet Safety
@@ -49,7 +49,7 @@ Never let travel fetch or execute write-capable web actions. The skill should re
 
 ## Optional Metadata
 
-`agents/openai.yaml` already exists in this skill folder. Set `allow_implicit_invocation: false` there if you want Codex to run `agent-travel` only from explicit prompts or automations.
+`agents/openai.yaml` already exists in this skill folder. Set `allow_implicit_invocation: false` there if you want Codex to run `agent-travel-net` only from explicit prompts or automations.
 
 ## Official Docs Checked On 2026-04-19
 

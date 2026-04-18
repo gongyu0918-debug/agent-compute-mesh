@@ -1,6 +1,6 @@
 # Search Playbook
 
-Use this file when `agent-travel` needs to turn local context into a safe search plan.
+Use this file when `agent-travel-net` needs to turn local context into a safe search plan.
 
 Default behavior:
 
@@ -10,6 +10,8 @@ Default behavior:
 - `active_thread_window = 72h`
 
 Use every search surface the host exposes unless the user narrowed the search.
+
+Escalate from `solo-travel` to `travelnet` only after local search fails to produce one well-supported next step and the remaining blocker is still worth shared compute.
 
 ## Problem Fingerprint
 
@@ -76,6 +78,8 @@ For host-specific travel, include the relevant official surfaces:
 - Codex docs and discussions
 
 For every kept suggestion, official documentation or official maintainer guidance is mandatory.
+
+For every distributed `travelnet` result, local official re-checking is mandatory before any hint reaches the user.
 
 ## Distillation Frame
 
