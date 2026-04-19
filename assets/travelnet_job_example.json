@@ -20,5 +20,7 @@
   "deadline_at": "2026-04-19T20:20:00+08:00",
   "privacy_tier": "P0",
   "fingerprint_cid": "bafytravelnetworkjob001fingerprint",
+  "local_accept_required": true,
+  "official_recheck_required": true,
   "signature": "sig_ed25519_job_20260419_001"
 }

@@ -18,12 +18,26 @@ Execution:
 - jobs stay on the local machine
 - no third-party workers
 - no token settlement
+- one fresh worker thread per lease
+- one isolated worktree or sandbox per lease
+- local acceptance before any result enters the next turn
+
+Build slice:
+- `job_spec`
+- `lease_runner`
+- `result_bundle`
+- `sandbox_receipt`
+- `local_accept_gate`
+- `metrics_logger`
+- `agent-travel-search adapter`
 
 Measure:
 - job creation rate
 - user reuse rate
 - average evidence count
 - average operator review time
+- sandbox receipt completeness
+- local acceptance pass rate
 
 ## Stage 2: Hosted
 
@@ -36,6 +50,7 @@ Execution:
 - hosted workers
 - credits-first billing
 - signed internal ledger for worker payouts
+- validator sampling with operator anti-affinity
 
 Measure:
 - gross margin per job
@@ -52,6 +67,7 @@ Execution:
 - keep scheduler centralized
 - let approved third-party workers claim jobs
 - use execution leases, challenge windows, and attestation
+- keep validator and solver `operator_id` values distinct
 
 Measure:
 - fill rate

@@ -14,6 +14,27 @@ Each job should contain:
 - one evidence requirement
 - one search or execution budget
 - one deadline
+- one privacy tier
+- one local acceptance rule
+
+## Minimum Schema
+
+Use this minimum shape when a local runner or scheduler compiles one job:
+
+- `job_id`
+- `problem_statement`
+- `host_family`
+- `version_band`
+- `evidence_requirement`
+- `privacy_tier`
+- `search_budget`
+- `deadline_at`
+- `local_accept_required`
+- `official_recheck_required`
+- `redundancy_mode`
+- `facet_plan`
+
+`facet_plan` should stay small in stage 1. A simple local runner can start with one facet, then expand to `discovery / validation / synthesis` only when the evidence path is stable.
 
 ## Facet Types
 
@@ -47,3 +68,14 @@ These are better as internal steps inside a larger `exploration job`.
 - redundancy level
 - review overhead
 - privacy level
+
+## Acceptance Contract
+
+Each job should also define:
+
+- `manual_merge_check`
+- `do_not_apply_when`
+- `expected_evidence_types`
+- `result_visibility`
+
+That keeps the execution lease, the result contract, and the local acceptance gate aligned.

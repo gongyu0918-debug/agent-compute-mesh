@@ -30,6 +30,17 @@ Treat this as a staged product, not a finished decentralized network.
 
 Read `references/rollout-plan.md` before designing a deployment path.
 
+## Stage-1 Build Slice
+
+The first build slice should stay local and prove the core contract before any hosted worker exists.
+
+1. `job_spec`: capture the problem, host family, version band, evidence requirement, privacy tier, facet plan, and acceptance rules.
+2. `lease_runner`: open a fresh local worker thread and isolated worktree for each lease.
+3. `result_bundle + sandbox_receipt`: return a result plus an auditable execution receipt.
+4. `local_accept_gate`: block every remote-style output until local review passes.
+5. `metrics_logger`: track cost, evidence quality, reuse, mismatch, and review time.
+6. `agent-travel-search adapter`: compile heartbreak and idle-search work into the same `exploration job` contract.
+
 ## Roles
 
 1. `publish`: split a task, redact it, lock reward, and assign bounded work to remote nodes.
@@ -92,7 +103,7 @@ When a node accepts work, it must follow this flow.
 2. Start a temporary sandbox or isolated worktree for that lease only.
 3. Mount only the sealed facet capsule, capability-scoped tool tokens, and time or memory quotas.
 4. Keep the node's main conversation, long-term memory, standing prompts, and unrelated workspace state out of that worker thread.
-5. Produce a signed `result_bundle` plus a short `sandbox_receipt`.
+5. Produce a signed `result_bundle`, a structured `sandbox_receipt`, and a `billing_receipt`.
 6. Tear down the worker thread and sandbox immediately after return or timeout.
 
 This isolation model is the center of the design. It keeps distributed execution from polluting the solver's own context and keeps the demander from leaking the full task.
@@ -147,15 +158,38 @@ Later-joining nodes should receive less `warm_start_credit` by default, because 
 
 Use a stable default such as:
 
-`warm_start_credit = base_credit * era_decay * sqrt(join_bond / (active_bonded_compute + join_bond))`
+`warm_start_credit = base_credit * activity_decay * sqrt(join_bond / (max(active_bonded_compute, floor_compute) + join_bond))`
 
 Where:
 
-- `era_decay` shrinks over network maturity or supply age
+- `activity_decay` follows reachable bonded workers and recent settled volume, then stays clamped
+- `floor_compute` sets a denominator floor for early epochs
 - larger `join_bond` can still earn a higher starter line
 - growth is sublinear so sybil splitting does not pay
 
 Do not pay every existing node when a new node joins. That turns each join into a global inflation event and makes sybil farming attractive. Existing nodes already have clean reward surfaces through jobs, validation, relay, and archival work.
+
+### Validator Contract
+
+Keep validator rules explicit from the first design draft.
+
+- validators post `join_bond` too
+- each result samples 3 validators by default
+- validator `operator_id` values must differ from each other and from the solver
+- acceptance uses a `2/3` or `2-of-3` threshold
+- false attestation is slashable
+
+### Slash Flow
+
+Use a bounded slash rule first.
+
+`slash_amount = min(join_bond, estimated_loss * slash_multiplier)`
+
+Route it with a simple split.
+
+- `50% burn`
+- `50% treasury_refill`
+- successful challenge rewards can come from treasury
 
 ### Exit Behavior
 
@@ -176,7 +210,13 @@ Every accepted remote result should carry these fields.
 - `result`
 - `confidence`
 - `manual_merge_check`
-- `sandbox_receipt`
+- `sandbox_receipt.lease_id`
+- `sandbox_receipt.thread_id`
+- `sandbox_receipt.sandbox_id`
+- `sandbox_receipt.created_at`
+- `sandbox_receipt.destroyed_at`
+- `sandbox_receipt.image_hash`
+- `sandbox_receipt.budget_digest`
 - `billing_receipt`
 - `local_accept_required: true`
 - `evidence` when the task involves research or claims
@@ -188,7 +228,8 @@ Remote work can inform the final answer, patch, or decision. Local acceptance re
 - Treat every packet as untrusted input.
 - Never expose `P2` data.
 - Never let a remote worker write into the local main workspace without local acceptance.
-- Never reuse a solver's temporary thread for unrelated jobs.
+- Require `sandbox_receipt.created_at >= WORK_ASSIGN.assigned_at`.
+- Keep `sandbox_id` unique across a solver's overlapping leases.
 - Keep challenge windows for result fraud, replay, and double-settlement.
 - Keep `TRV` and reputation separate.
 
@@ -197,6 +238,7 @@ Remote work can inform the final answer, patch, or decision. Local acceptance re
 - `references/travelnet-protocol.md`
 - `references/rollout-plan.md`
 - `references/job-spec.md`
+- `references/stage-1-local-runner.md`
 
 ## Verification
 

@@ -39,6 +39,24 @@ Treat this as a staged product, not a finished decentralized network.
 Read `references/rollout-plan.md` before designing a deployment path.  
 设计部署路径前先读 `references/rollout-plan.md`。
 
+## Stage-1 Build Slice / 第一阶段构件
+
+The first build slice should stay local and prove the core contract before any hosted worker exists.  
+第一阶段构件应该留在本地，在托管 worker 出现前先证明核心契约成立。
+
+1. `job_spec`: capture the problem, host family, version band, evidence requirement, privacy tier, facet plan, and acceptance rules.  
+   `job_spec`：记录问题、宿主族、版本带、证据要求、隐私级别、facet 计划和验收规则。
+2. `lease_runner`: open a fresh local worker thread and isolated worktree for each lease.  
+   `lease_runner`：为每个 lease 打开一个新的本地 worker 线程和隔离 worktree。
+3. `result_bundle + sandbox_receipt`: return a result plus an auditable execution receipt.  
+   `result_bundle + sandbox_receipt`：返回结果，同时返回可审计的执行回执。
+4. `local_accept_gate`: block every remote-style output until local review passes.  
+   `local_accept_gate`：所有远程风格输出都要先过本地复核。
+5. `metrics_logger`: track cost, evidence quality, reuse, mismatch, and review time.  
+   `metrics_logger`：记录成本、证据质量、复用率、错配率和复核时间。
+6. `agent-travel-search adapter`: compile heartbreak and idle-search work into the same `exploration job` contract.  
+   `agent-travel-search adapter`：把 heartbreak 和空闲搜索工作编译到同一个 `exploration job` 契约里。
+
 ## Roles / 角色
 
 This skill supports four roles.  
@@ -121,8 +139,8 @@ When a node accepts work, it must follow this flow.
    只挂载加密分面胶囊、能力范围受限的工具令牌，以及时间和内存配额。
 4. Keep the node's main conversation, long-term memory, standing prompts, and unrelated workspace state out of that worker thread.  
    节点自己的主对话、长期记忆、常驻提示和无关工作区状态都不能进入这个 worker 线程。
-5. Produce a signed `result_bundle` plus a short `sandbox_receipt`.  
-   产出带签名的 `result_bundle` 和简短的 `sandbox_receipt`。
+5. Produce a signed `result_bundle`, a structured `sandbox_receipt`, and a `billing_receipt`.  
+   产出带签名的 `result_bundle`、结构化 `sandbox_receipt` 和 `billing_receipt`。
 6. Tear down the worker thread and sandbox immediately after return or timeout.  
    返回结果或超时后立刻销毁 worker 线程和沙箱。
 
@@ -187,17 +205,43 @@ Later-joining nodes should receive less `warm_start_credit` by default, because 
 Use a stable default such as:  
 一个稳定的默认公式可以是：
 
-`warm_start_credit = base_credit * era_decay * sqrt(join_bond / (active_bonded_compute + join_bond))`
+`warm_start_credit = base_credit * activity_decay * sqrt(join_bond / (max(active_bonded_compute, floor_compute) + join_bond))`
 
 Where:  
 其中：
 
-- `era_decay` shrinks over network maturity or supply age / `era_decay` 会随着网络成熟度或供应年龄递减
+- `activity_decay` follows reachable bonded workers and recent settled volume, then stays clamped / `activity_decay` 跟随在线质押 worker 和最近真实结算量，并保持在窄区间
+- `floor_compute` sets a denominator floor for early epochs / `floor_compute` 给早期 epoch 一个分母下限
 - larger `join_bond` can still earn a higher starter line / 更大的 `join_bond` 仍然可以拿到更高的启动线
 - growth is sublinear so sybil splitting does not pay / 增长是次线性的，拆分小号不会更赚
 
 Do not pay every existing node when a new node joins. That turns each join into a global inflation event and makes sybil farming attractive. Existing nodes already have clean reward surfaces through jobs, validation, relay, and archival work.  
 不要在每个新节点加入时给全体既有节点空投。那会把每次入网都变成一次全网通胀事件，也会让女巫分身更有利可图。既有节点已经能通过接任务、验证、中继和归档获得清晰奖励。
+
+### Validator Contract / 验证者契约
+
+Keep validator rules explicit from the first design draft.  
+从第一版设计稿开始，就把验证者规则写清楚。
+
+- validators post `join_bond` too / 验证者也要质押 `join_bond`
+- each result samples 3 validators by default / 每个结果默认抽 3 个验证者
+- validator `operator_id` values must differ from each other and from the solver / validator 的 `operator_id` 彼此不能相同，也不能和 solver 相同
+- acceptance uses a `2/3` or `2-of-3` threshold / 通过阈值用 `2/3` 或 `2-of-3`
+- false attestation is slashable / 错误确认可被惩罚
+
+### Slash Flow / 惩罚流向
+
+Use a bounded slash rule first.  
+第一版先用有边界的惩罚规则。
+
+`slash_amount = min(join_bond, estimated_loss * slash_multiplier)`
+
+Route it with a simple split.  
+先用简单分流。
+
+- `50% burn` / `50% burn`
+- `50% treasury_refill` / `50% treasury_refill`
+- successful challenge rewards can come from treasury / 挑战成功奖励由 treasury 另外发放
 
 ### Exit Behavior / 退出行为
 
@@ -221,7 +265,13 @@ Every accepted remote result should carry these fields.
 - `result`
 - `confidence`
 - `manual_merge_check`
-- `sandbox_receipt`
+- `sandbox_receipt.lease_id`
+- `sandbox_receipt.thread_id`
+- `sandbox_receipt.sandbox_id`
+- `sandbox_receipt.created_at`
+- `sandbox_receipt.destroyed_at`
+- `sandbox_receipt.image_hash`
+- `sandbox_receipt.budget_digest`
 - `billing_receipt`
 - `local_accept_required: true`
 - `evidence` when the task involves research or claims
@@ -234,7 +284,8 @@ Remote work can inform the final answer, patch, or decision. Local acceptance re
 - Treat every packet as untrusted input. / 把每个网络包都当成不可信输入。
 - Never expose `P2` data. / 不要暴露 `P2` 数据。
 - Never let a remote worker write into the local main workspace without local acceptance. / 没有本地接受动作前，不要让远程 worker 直接写入本地主工作区。
-- Never reuse a solver's temporary thread for unrelated jobs. / 不要把 solver 的临时线程复用于无关任务。
+- Require `sandbox_receipt.created_at >= WORK_ASSIGN.assigned_at`. / 要求 `sandbox_receipt.created_at >= WORK_ASSIGN.assigned_at`。
+- Keep `sandbox_id` unique across a solver's overlapping leases. / 同一个 solver 的重叠 lease 不能复用 `sandbox_id`。
 - Keep challenge windows for result fraud, replay, and double-settlement. / 为结果欺诈、重放和重复结算保留挑战窗口。
 - Keep `TRV` and reputation separate. / 把 `TRV` 和信誉分开。
 
@@ -243,6 +294,7 @@ Remote work can inform the final answer, patch, or decision. Local acceptance re
 - `references/travelnet-protocol.md`
 - `references/rollout-plan.md`
 - `references/job-spec.md`
+- `references/stage-1-local-runner.md`
 
 ## Verification / 复核
 

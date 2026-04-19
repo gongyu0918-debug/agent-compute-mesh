@@ -63,6 +63,63 @@ def require_str_list(value: object, key: str, errors: list[str], allow_empty: bo
         errors.append(f"{key} must not be empty")
 
 
+def require_str(value: object, key: str, errors: list[str]) -> None:
+    if not isinstance(value, str) or not value:
+        errors.append(f"{key} must be a non-empty string")
+
+
+def parse_iso_or_error(value: object, key: str, errors: list[str]) -> datetime | None:
+    if not isinstance(value, str):
+        errors.append(f"{key} must be a string")
+        return None
+    try:
+        raw = value[:-1] + "+00:00" if value.endswith("Z") else value
+        return datetime.fromisoformat(raw)
+    except ValueError as exc:
+        errors.append(f"{key} is not valid ISO-8601: {exc}")
+        return None
+
+
+def require_object(value: object, key: str, errors: list[str]) -> dict[str, object] | None:
+    if not isinstance(value, dict):
+        errors.append(f"{key} must be an object")
+        return None
+    return value
+
+
+def validate_sandbox_receipt(receipt: dict[str, object], errors: list[str]) -> None:
+    require_fields(
+        receipt,
+        {
+            "lease_id",
+            "thread_id",
+            "sandbox_id",
+            "created_at",
+            "destroyed_at",
+            "image_hash",
+            "budget_digest",
+            "tool_scope",
+            "exit_reason",
+        },
+        errors,
+    )
+    for key in ("lease_id", "thread_id", "sandbox_id", "image_hash", "budget_digest", "exit_reason"):
+        require_str(receipt.get(key), f"sandbox_receipt.{key}", errors)
+    require_str_list(receipt.get("tool_scope"), "sandbox_receipt.tool_scope", errors)
+    created_at = parse_iso_or_error(receipt.get("created_at"), "sandbox_receipt.created_at", errors)
+    destroyed_at = parse_iso_or_error(receipt.get("destroyed_at"), "sandbox_receipt.destroyed_at", errors)
+    if created_at and destroyed_at and destroyed_at < created_at:
+        errors.append("sandbox_receipt.destroyed_at must be later than or equal to sandbox_receipt.created_at")
+
+
+def validate_billing_receipt(receipt: dict[str, object], errors: list[str]) -> None:
+    require_fields(receipt, {"ledger_id", "meter_digest", "estimated_cost", "solver_amount"}, errors)
+    require_str(receipt.get("ledger_id"), "billing_receipt.ledger_id", errors)
+    require_str(receipt.get("meter_digest"), "billing_receipt.meter_digest", errors)
+    require_positive_number(receipt, "estimated_cost", errors)
+    require_positive_number(receipt, "solver_amount", errors)
+
+
 def validate_join(packet: dict[str, object], errors: list[str]) -> None:
     require_fields(
         packet,
@@ -75,6 +132,7 @@ def validate_join(packet: dict[str, object], errors: list[str]) -> None:
             "compute_class",
             "model_band",
             "bond_amount",
+            "operator_id",
             "warm_start_requested",
             "public_channels",
         },
@@ -82,6 +140,7 @@ def validate_join(packet: dict[str, object], errors: list[str]) -> None:
     )
     require_agent_id(packet.get("from_agent_id"), "from_agent_id", errors)
     require_positive_number(packet, "bond_amount", errors)
+    require_str(packet.get("operator_id"), "operator_id", errors)
     if not isinstance(packet.get("warm_start_requested"), bool):
         errors.append("warm_start_requested must be boolean")
     require_str_list(packet.get("public_channels"), "public_channels", errors)
@@ -105,6 +164,8 @@ def validate_header(packet: dict[str, object], errors: list[str]) -> None:
             "deadline_at",
             "privacy_tier",
             "fingerprint_cid",
+            "local_accept_required",
+            "official_recheck_required",
         },
         errors,
     )
@@ -116,6 +177,10 @@ def validate_header(packet: dict[str, object], errors: list[str]) -> None:
         errors.append("WORK_ASK_HEADER privacy_tier must be P0")
     if not isinstance(packet.get("fingerprint_cid"), str):
         errors.append("fingerprint_cid must be a string")
+    if packet.get("local_accept_required") is not True:
+        errors.append("local_accept_required must be true")
+    if packet.get("official_recheck_required") is not True:
+        errors.append("official_recheck_required must be true")
 
 
 def validate_result(packet: dict[str, object], errors: list[str]) -> None:
@@ -133,6 +198,9 @@ def validate_result(packet: dict[str, object], errors: list[str]) -> None:
             "evidence_count",
             "advisory_only",
             "official_recheck_required",
+            "local_accept_required",
+            "sandbox_receipt",
+            "billing_receipt",
         },
         errors,
     )
@@ -142,6 +210,14 @@ def validate_result(packet: dict[str, object], errors: list[str]) -> None:
         errors.append("advisory_only must be true")
     if packet.get("official_recheck_required") is not True:
         errors.append("official_recheck_required must be true")
+    if packet.get("local_accept_required") is not True:
+        errors.append("local_accept_required must be true")
+    sandbox_receipt = require_object(packet.get("sandbox_receipt"), "sandbox_receipt", errors)
+    if sandbox_receipt is not None:
+        validate_sandbox_receipt(sandbox_receipt, errors)
+    billing_receipt = require_object(packet.get("billing_receipt"), "billing_receipt", errors)
+    if billing_receipt is not None:
+        validate_billing_receipt(billing_receipt, errors)
 
 
 def validate_settlement(packet: dict[str, object], errors: list[str]) -> None:

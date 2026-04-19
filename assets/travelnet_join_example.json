@@ -3,6 +3,7 @@
   "packet_version": "0.1.0",
   "from_agent_id": "agt_7f4c9d2a11",
   "timestamp": "2026-04-19T18:10:00+08:00",
+  "operator_id": "op_mesh_lab_001",
   "compute_class": "medium",
   "model_band": "frontier-plus",
   "bond_amount": 120.0,

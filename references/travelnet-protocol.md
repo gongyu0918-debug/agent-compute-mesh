@@ -4,6 +4,8 @@
 
 The long-term network assumption is simple: there are already many deployed agents in the wild, and their compute is uneven. Some have stronger models, broader tool access, or more idle time. Some are stuck on a hard task and would benefit from outside help. `travelnet` is the eventual wire shape for that market. The immediate delivery target is smaller: prove that bounded public-data jobs, isolated execution leases, and verifiable billing receipts are useful before opening the worker pool.
 
+This design prioritizes isolation, evidence visibility, and local acceptance. It is aimed at bounded agent subtasks where final review still happens on the local side.
+
 ## Deployment Order
 
 Use this order by default:
@@ -40,6 +42,21 @@ Current scope should exclude:
 - tasks requiring user secrets
 - direct mutation of the demander's main workspace
 
+## Stage-1 Local Runner
+
+The first executable slice should stay local.
+
+Stage 1 needs six concrete parts:
+
+1. `job_spec`
+2. `lease_runner`
+3. `result_bundle`
+4. `sandbox_receipt`
+5. `local_accept_gate`
+6. `metrics_logger`
+
+`agent-travel-search` is the first intended workload. A heartbreak or idle-search trigger compiles into one `exploration job`, runs through a local execution lease, returns evidence, and waits for local acceptance before any hint reaches the next turn.
+
 ## Official Inputs Checked On 2026-04-19
 
 - [Bitcoin whitepaper](https://bitcoin.org/bitcoin.pdf)
@@ -74,6 +91,8 @@ The economic shape below borrows four stable ideas from those systems:
 
 One node may play multiple roles.
 
+Each node should also declare an `operator_id`. Matching, validator sampling, and challenge review should prefer different `operator_id` values so the network can apply anti-collusion rules.
+
 ## Privacy Model
 
 Use three privacy tiers.
@@ -106,7 +125,7 @@ The network does not need the full problem to route work. It needs only enough m
 
 `JOIN_ANNOUNCE`
 - Purpose: declare a new agent, publish its public key, bond intent, and public capability tags.
-- Broadcast payload: `agent_id`, `compute_class`, `model_band`, `bond_amount`, `warm_start_requested`, `public_channels`, `signature`.
+- Broadcast payload: `agent_id`, `operator_id`, `compute_class`, `model_band`, `bond_amount`, `warm_start_requested`, `public_channels`, `signature`.
 
 `WORK_ASK_HEADER`
 - Purpose: advertise a bounded problem and invite bids.
@@ -118,11 +137,11 @@ The network does not need the full problem to route work. It needs only enough m
 
 `WORK_ASSIGN`
 - Purpose: assign a facet to a solver and attach an encrypted capsule reference.
-- Broadcast payload: `job_id`, `from_agent_id`, `to_agent_id`, `facet_id`, `sealed_capsule_cid`, `reward_cap`, `signature`.
+- Broadcast payload: `job_id`, `lease_id`, `from_agent_id`, `to_agent_id`, `facet_id`, `sealed_capsule_cid`, `reward_cap`, `assigned_at`, `signature`.
 
 `WORK_RESULT`
 - Purpose: deliver a signed result fragment.
-- Broadcast payload: `job_id`, `from_agent_id`, `facet_id`, `result_bundle_cid`, `evidence_count`, `advisory_only`, `official_recheck_required`, `signature`.
+- Broadcast payload: `job_id`, `lease_id`, `from_agent_id`, `facet_id`, `result_bundle_cid`, `sandbox_receipt_cid`, `billing_receipt_cid`, `evidence_count`, `advisory_only`, `official_recheck_required`, `local_accept_required`, `signature`.
 
 `WORK_ATTEST`
 - Purpose: record validator approval or challenge.
@@ -131,6 +150,18 @@ The network does not need the full problem to route work. It needs only enough m
 `WORK_SETTLEMENT`
 - Purpose: move value after acceptance.
 - Broadcast payload: `job_id`, `settlement_id`, `payer_agent_id`, `solver_agent_id`, `validator_agent_ids`, `relay_agent_ids`, `solver_amount`, `validator_fee`, `relay_fee`, `treasury_refill`, `burn_amount`, `total_debit`, `receipt_cid`, `signature`.
+
+## Validator Set And Attestation
+
+Validators should follow a separate bond and slashing path.
+
+- sample 3 validators by default
+- keep `operator_id` distinct across validators
+- keep validator `operator_id` distinct from the solver
+- require a `2/3` or `2-of-3` pass threshold
+- treat false attestation as slashable behavior
+
+This keeps `WORK_ATTEST` meaningful and makes validation cost real.
 
 ## Transport, Routing, And Storage
 
@@ -189,7 +220,13 @@ This warm-start path keeps onboarding practical and keeps inflation predictable.
 
 Use a default decay such as:
 
-`warm_start_credit = base_credit * era_decay * sqrt(join_bond / (active_bonded_compute + join_bond))`
+`warm_start_credit = base_credit * activity_decay * sqrt(join_bond / (max(active_bonded_compute, floor_compute) + join_bond))`
+
+Where:
+
+- `activity_decay` follows reachable bonded workers and recent settled volume
+- `floor_compute` sets a denominator floor for early epochs
+- the square-root term keeps growth sublinear
 
 This means later joins usually start with less credit because their marginal share of total compute is smaller. A node can still improve its starter line by posting a larger bond or materially increasing bonded compute.
 
@@ -247,10 +284,29 @@ For each `WORK_ASSIGN`:
 2. create a temporary sandbox or isolated worktree
 3. mount only the sealed facet capsule and scoped tool credentials
 4. apply explicit time, token, CPU, and memory budgets
-5. return a signed `result_bundle` and a `sandbox_receipt`
+5. return a signed `result_bundle`, `sandbox_receipt`, and `billing_receipt`
 6. destroy the worker thread and sandbox after return or timeout
 
 This lease model keeps solver context clean and keeps demander context private. The persistent network record stores only packets, receipts, and settlement objects.
+
+Each `sandbox_receipt` should carry:
+
+- `lease_id`
+- `thread_id`
+- `sandbox_id`
+- `created_at`
+- `destroyed_at`
+- `image_hash`
+- `budget_digest`
+- `tool_scope`
+- `exit_reason`
+
+Validators and auditors should check:
+
+- `sandbox_receipt.created_at >= WORK_ASSIGN.assigned_at`
+- `destroyed_at >= created_at`
+- a solver does not reuse one `sandbox_id` across overlapping leases
+- `tool_scope` fits the assigned facet
 
 ### Reward Split
 
@@ -302,6 +358,17 @@ Slashable behavior includes:
 - sealed capsule leakage
 
 A challenge should reference signed packets and CIDs so auditors can replay the event.
+
+Use a bounded slash rule:
+
+`slash_amount = min(join_bond, estimated_loss * slash_multiplier)`
+
+Route `slash_amount` through a simple split first:
+
+- `50% burn`
+- `50% treasury_refill`
+
+Successful challenge rewards can come from treasury so the slash path and the claimant reward path stay easy to audit.
 
 ## Local Safety Gate
 
