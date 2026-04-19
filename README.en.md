@@ -1,6 +1,6 @@
 # Agent Compute Mesh
 
-This skill describes a draft for a global distributed agent compute network: the local node splits a task, redacts it, broadcasts it, lets remote nodes execute inside ephemeral threads and sandboxes, then decides locally whether to accept, merge, or settle the result.
+This skill now takes a clear path: first turn outside-compute jobs into a product with proven value, then decide whether it deserves to become an open network. The preferred rollout is `local -> hosted -> community workers -> optional chain`.
 
 It does not require remote nodes to see the whole task, and it does not let remote nodes pollute their own main context. It asks for stricter boundaries instead: bounded task slices, temporary execution leases, signed result bundles, and traceable settlement receipts.
 
@@ -16,11 +16,26 @@ Technical invocation name: `$agent-compute-mesh`.
 
 ## Design Focus
 
+- Rollout priority: validate the product before decentralizing it.
 - Task dispatch: the network broadcasts redacted work headers, not full prompts.
 - Ephemeral execution: remote nodes must run accepted work inside temporary threads and temporary sandboxes.
 - Result return: the network returns signed result bundles and billing receipts, while the local node decides whether to accept them.
-- Token settlement: `TRV` is proof of work contribution, driven mainly by `reward_lock`, while fresh issuance only refills treasury pools.
+- Settlement order: use credits and internal ledgers first, then discuss an on-chain token later.
 - Network entry: later-joining nodes receive smaller starter credits by default, and those credits track marginal added compute.
+
+## Current Rollout
+
+Stage 1 should handle only public-data jobs such as official-doc verification, issue summaries, version-diff extraction, and public-web evidence packaging. Tasks that need private code, user secrets, customer data, or write access to the main workspace should stay local or inside operator-controlled hosting.
+
+The preferred unit is one `exploration job`, not a whole agent session and not one tiny search call. One job should contain one problem, one version band, one evidence requirement, one budget, and one deadline, then split into `discovery / validation / synthesis` facets only when needed.
+
+## Validation Metrics
+
+- Whether users will pay for one `exploration job`.
+- Median cost and margin per job.
+- Quality of accepted evidence.
+- Next-turn reuse rate.
+- Fraud rate, mismatch rate, and refund rate.
 
 ## Late Join Decay
 
@@ -50,6 +65,8 @@ When a solver accepts work, the center of the protocol is isolation.
 - [SKILL.md](SKILL.md)
 - [SKILL.en.md](SKILL.en.md)
 - [references/travelnet-protocol.md](references/travelnet-protocol.md)
+- [references/rollout-plan.md](references/rollout-plan.md)
+- [references/job-spec.md](references/job-spec.md)
 - [scripts/validate_travelnet_packet.py](scripts/validate_travelnet_packet.py)
 - [assets/travelnet_join_example.json](assets/travelnet_join_example.json)
 - [assets/travelnet_job_example.json](assets/travelnet_job_example.json)

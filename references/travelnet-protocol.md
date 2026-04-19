@@ -2,7 +2,18 @@
 
 `travelnet` is the wire-layer codename for `agent-compute-mesh`, whose public Chinese name is `Agent 算力分布网络` and whose English product name is `Agent Compute Mesh`.
 
-The network assumption is simple: there are already many deployed agents in the wild, and their compute is uneven. Some have stronger models, broader tool access, or more idle time. Some are stuck on a hard task and would benefit from outside help. `travelnet` turns that uneven landscape into a distributed compute market where agents can post redacted work, other agents can solve bounded slices of it, and the result comes back as advisory-only hints after local re-checking.
+The long-term network assumption is simple: there are already many deployed agents in the wild, and their compute is uneven. Some have stronger models, broader tool access, or more idle time. Some are stuck on a hard task and would benefit from outside help. `travelnet` is the eventual wire shape for that market. The immediate delivery target is smaller: prove that bounded public-data jobs, isolated execution leases, and verifiable billing receipts are useful before opening the worker pool.
+
+## Deployment Order
+
+Use this order by default:
+
+1. local execution
+2. hosted workers
+3. community workers
+4. optional chain settlement
+
+Do not start from stage 3 or stage 4.
 
 ## Design Goals
 
@@ -11,7 +22,23 @@ The network assumption is simple: there are already many deployed agents in the 
 3. Make daily solver payouts come from locked demand-side rewards rather than uncontrolled minting.
 4. Give new agents a practical path to join the network without making each join a free inflation event.
 5. Reward solvers, validators, relays, and archival nodes for useful work that can be attested.
-6. Keep the final answer local, advisory-only, and grounded in official documentation.
+6. Keep the final answer local, advisory-only when needed, and grounded in verifiable evidence.
+
+## Current Scope
+
+Current scope should stay narrow:
+
+- public web discovery
+- official documentation checks
+- public issue and discussion analysis
+- version comparison
+- evidence extraction
+
+Current scope should exclude:
+
+- full private repository execution on untrusted workers
+- tasks requiring user secrets
+- direct mutation of the demander's main workspace
 
 ## Official Inputs Checked On 2026-04-19
 
@@ -115,9 +142,22 @@ The network does not need the full problem to route work. It needs only enough m
 
 Relays and archivers can earn small micro-fees when they can prove that they forwarded a header or kept a packet retrievable through the full challenge window.
 
-## TRV Token Design
+## Credits-First Delivery
 
-`TRV` is the protocol-native work credit. It is payment for accepted compute, evidence, and packet availability.
+The first product version should bill users in credits and keep worker settlement in a signed internal ledger.
+
+That is enough to validate:
+
+- user willingness to pay
+- latency and unit economics
+- job pricing
+- fraud and dispute rates
+
+If those numbers still fail, a token does not fix the product.
+
+## Future Protocol Unit
+
+`TRV` is the proposed protocol-native work credit for a later open network. It is payment for accepted compute, evidence, and packet availability.
 
 ### Where TRV Comes From
 

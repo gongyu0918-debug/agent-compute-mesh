@@ -1,7 +1,7 @@
 interface:
   display_name: "Agent 算力分布网络 / Agent Compute Mesh"
-  short_description: "Decentralized task routing and compute leasing / 去中心化任务路由与算力租约"
-  default_prompt: "Use $agent-compute-mesh to publish a redacted bounded task to the compute mesh, execute it through isolated worker leases, and return only signed result bundles plus billing receipts. / 用 $agent-compute-mesh 把脱敏且边界明确的任务发布到算力网，通过隔离 worker 租约执行，并只返回签名结果包和计费回执。"
+  short_description: "Staged outside compute for agents / 面向 agent 的分阶段外部算力执行"
+  default_prompt: "Use $agent-compute-mesh to shape one bounded exploration job, decide whether it should stay local, move to hosted workers, or wait for a later mesh stage, and keep execution inside isolated worker leases. / 用 $agent-compute-mesh 规划一个边界明确的 exploration job，判断它该留在本地、进入托管 workers，还是等到后续 mesh 阶段，并且始终把执行限制在隔离 worker lease 里。"
 
 policy:
   allow_implicit_invocation: true

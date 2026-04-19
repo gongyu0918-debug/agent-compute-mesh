@@ -1,6 +1,6 @@
 ---
 name: agent-compute-mesh
-description: Publish redacted tasks to a decentralized agent compute mesh where remote nodes execute bounded work in ephemeral sandbox threads, return signed result bundles, and settle tokenized work credits.
+description: Stage external compute for agents through local, hosted, and optional community-worker execution leases. Start with public-data tasks, isolated worker sandboxes, and credits-first settlement, then grow into a broader compute mesh only after the product proves real demand.
 ---
 
 # Agent Compute Mesh
@@ -9,7 +9,7 @@ Use this skill when the local agent needs outside compute, outside tool coverage
 
 Technical invocation name: `$agent-compute-mesh`.
 
-This skill is for the case where a local agent wants to publish a task to distributed nodes. The core idea is to split work into bounded fragments, redact them, broadcast them, and let remote nodes execute inside ephemeral threads and sandboxes.
+This skill is for the case where a local agent wants to send part of its workload to outside compute. The realistic path is not chain-first and not token-first. The realistic path is to make controlled public-data jobs work first, then expand toward hosted workers and finally community workers.
 
 ## Experimental Status
 
@@ -18,6 +18,17 @@ This skill is for the case where a local agent wants to publish a task to distri
 - The protocol, token model, scheduling, execution isolation, and settlement logic here are still design drafts.
 - Before any real use, it needs independent security review, adversarial testing, fault injection, economic simulation, and long-run validation.
 - If someone uses this design directly and it breaks, that is their own responsibility.
+
+## Rollout Path
+
+Treat this as a staged product, not a finished decentralized network.
+
+1. `stage-1 local`: keep execution on the local machine and validate task shape, evidence quality, and user value.
+2. `stage-2 hosted`: move approved public-data jobs to a central hosted worker service and bill with credits.
+3. `stage-3 community-workers`: open the worker pool to third parties after hosted traffic proves pricing, fraud rate, and worker utilization.
+4. `stage-4 optional-chain`: add on-chain settlement only if cross-operator trust and cross-jurisdiction payments become the bottleneck.
+
+Read `references/rollout-plan.md` before designing a deployment path.
 
 ## Roles
 
@@ -35,9 +46,45 @@ Use this skill when any of these is true.
 - the task is wide enough to benefit from parallel remote facets
 - the local node is idle and can earn work credits by solving for others
 
+## Allowed Work
+
+Start with public-data jobs only.
+
+- official docs lookup
+- issue or discussion summarization
+- version diff extraction
+- evidence collection and citation packaging
+- public web discovery and verification
+
+Keep these local or hosted under operator control.
+
+- private code review with full repository access
+- tasks requiring user secrets or private API keys
+- customer data processing
+- tasks that can directly mutate the main workspace
+
+Read `references/job-spec.md` before deciding whether a task is small enough to outsource and valuable enough to price.
+
 ## Task Execution Model
 
 The core execution unit is an `execution lease`.
+
+The preferred task granularity is one `exploration job`, not one whole session and not one tiny search call.
+
+An `exploration job` should contain:
+
+- one problem statement
+- one host or product family
+- one version band
+- one evidence requirement
+- one search budget
+- one deadline
+
+Split one job into these facet classes when needed.
+
+- `discovery`
+- `validation`
+- `synthesis`
 
 When a node accepts work, it must follow this flow.
 
@@ -70,11 +117,22 @@ Read `references/travelnet-protocol.md` for the full wire shape. The short flow 
 6. `WORK_ATTEST`
 7. `WORK_SETTLEMENT`
 
-## Token Model
+## Settlement Model
 
-The protocol-native work credit is `TRV`.
+Use `credits-first` settlement in product stages 1 to 3.
 
-Use this accounting shape.
+- user-facing billing should be credits, subscriptions, or hosted usage meters
+- worker payouts should come from a signed internal ledger
+- reward should still be locked before assignment
+- validator and relay fees should still be explicit
+
+Treat `TRV` as a future protocol unit, not the current product surface.
+
+Only consider a chain-backed native token after hosted traffic already proves demand, pricing, and fraud control.
+
+### Future Protocol Unit
+
+If a later network layer needs a protocol-native unit, use this accounting shape.
 
 - `reward_lock`: the demander escrows the reward before assignment.
 - `join_bond`: every new node posts stake before it can receive starter credits or work.
@@ -137,6 +195,8 @@ Remote work can inform the final answer, patch, or decision. Local acceptance re
 ## References
 
 - `references/travelnet-protocol.md`
+- `references/rollout-plan.md`
+- `references/job-spec.md`
 
 ## Verification
 
@@ -147,3 +207,11 @@ Before you accept or settle remote work, re-check:
 - the result or patch still matches the local constraints
 - the billing receipt matches the accepted work
 - no leakage or replay signal appears in the packet trail
+
+Track these rollout metrics before opening the next stage.
+
+- user willingness to pay
+- median job cost
+- accepted evidence quality
+- next-turn reuse rate
+- fraud or mismatch rate

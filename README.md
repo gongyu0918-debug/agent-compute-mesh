@@ -1,7 +1,7 @@
 # Agent 算力分布网络 / Agent Compute Mesh
 
-这个 skill 描述的是一个全球分布式 agent 算力网络草案：本地节点把任务拆开、脱敏、广播，再让远程节点在临时线程和临时沙箱里代为执行。结果回来后，本地节点再决定是否接受、是否合并、是否结算。  
-This skill describes a draft for a global distributed agent compute network: the local node splits a task, redacts it, broadcasts it, lets remote nodes execute inside ephemeral threads and sandboxes, then decides locally whether to accept, merge, or settle the result.
+这个 skill 当前主攻的方向很明确：先把外部算力任务做成能验证价值的产品，再决定要不要把它扩成开放网络。现在的首选路线是 `local -> hosted -> community workers -> optional chain`。  
+This skill now takes a clear path: first turn outside-compute jobs into a product with proven value, then decide whether it deserves to become an open network. The preferred rollout is `local -> hosted -> community workers -> optional chain`.
 
 它不要求远程节点看到完整任务，也不让远程节点污染自己的主上下文。它要求的是更严格的边界：局部任务切片、临时执行租约、签名结果包、可追溯结算回执。  
 It does not require remote nodes to see the whole task, and it does not let remote nodes pollute their own main context. It asks for stricter boundaries instead: bounded task slices, temporary execution leases, signed result bundles, and traceable settlement receipts.
@@ -19,11 +19,28 @@ Technical invocation name: `$agent-compute-mesh`.
 
 ## 设计重点 / Design Focus
 
+- 路线优先级：先做产品验证，再做去中心化。 / Rollout priority: validate the product before decentralizing it.
 - 任务分发：广播的是脱敏工作头，不是完整 prompt。 / Task dispatch: the network broadcasts redacted work headers, not full prompts.
 - 临时执行：远程节点接单后必须在临时线程和临时沙箱里运行。 / Ephemeral execution: remote nodes must run accepted work inside temporary threads and temporary sandboxes.
 - 结果回收：返回的是签名结果包和计费回执，本地节点决定是否接受。 / Result return: the network returns signed result bundles and billing receipts, while the local node decides whether to accept them.
-- 代币结算：`TRV` 是工作量凭证，主要由 `reward_lock` 驱动，补充发行只做 treasury 回填。 / Token settlement: `TRV` is proof of work contribution, driven mainly by `reward_lock`, while fresh issuance only refills treasury pools.
+- 结算顺序：先用 credits 和内部账本，再讨论链上代币。 / Settlement order: use credits and internal ledgers first, then discuss an on-chain token later.
 - 新人入网：晚加入节点默认拿更少的启动额度，额度和边际新增算力挂钩。 / Network entry: later-joining nodes receive smaller starter credits by default, and those credits track marginal added compute.
+
+## 当前落地 / Current Rollout
+
+第一阶段只做公开数据任务，比如官方文档核对、issue 汇总、版本差异提取、公开网页证据打包。真正需要私有代码、用户密钥、客户数据、主工作区写权限的任务，继续留在本地或自控托管环境。  
+Stage 1 should handle only public-data jobs such as official-doc verification, issue summaries, version-diff extraction, and public-web evidence packaging. Tasks that need private code, user secrets, customer data, or write access to the main workspace should stay local or inside operator-controlled hosting.
+
+推荐的任务粒度是一整个 `exploration job`，不是整段 agent 会话，也不是一条极小的搜索调用。一个 job 里包含一个问题、一个版本带、一个证据要求、一个预算、一个截止时间，必要时再拆成 `discovery / validation / synthesis` 三类 facet。  
+The preferred unit is one `exploration job`, not a whole agent session and not one tiny search call. One job should contain one problem, one version band, one evidence requirement, one budget, and one deadline, then split into `discovery / validation / synthesis` facets only when needed.
+
+## 验证指标 / Validation Metrics
+
+- 用户是否愿意为一次 `exploration job` 付费。 / Whether users will pay for one `exploration job`.
+- 单个 job 的中位成本和毛利。 / Median cost and margin per job.
+- 被接受证据的质量。 / Quality of accepted evidence.
+- 下一轮任务复用率。 / Next-turn reuse rate.
+- 欺诈率、错配率和退款率。 / Fraud rate, mismatch rate, and refund rate.
 
 ## 晚加入衰减 / Late Join Decay
 
@@ -65,6 +82,8 @@ When a solver accepts work, the center of the protocol is isolation.
 - [SKILL.md](SKILL.md)
 - [SKILL.en.md](SKILL.en.md)
 - [references/travelnet-protocol.md](references/travelnet-protocol.md)
+- [references/rollout-plan.md](references/rollout-plan.md)
+- [references/job-spec.md](references/job-spec.md)
 - [scripts/validate_travelnet_packet.py](scripts/validate_travelnet_packet.py)
 - [assets/travelnet_join_example.json](assets/travelnet_join_example.json)
 - [assets/travelnet_job_example.json](assets/travelnet_job_example.json)

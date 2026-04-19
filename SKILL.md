@@ -1,6 +1,6 @@
 ---
 name: agent-compute-mesh
-description: Publish redacted tasks to a decentralized agent compute mesh where remote nodes execute bounded work in ephemeral sandbox threads, return signed result bundles, and settle tokenized work credits. 将脱敏任务发布到去中心化 agent 算力网，由远程节点在临时沙箱线程里执行边界明确的工作，返回签名结果包，并按代币化工作量结算。
+description: Stage external compute for agents through local, hosted, and optional community-worker execution leases. Start with public-data tasks, isolated worker sandboxes, and credits-first settlement, then grow into a broader compute mesh only after the product proves real demand. 通过本地、托管和可选社区 worker 的 execution lease 为 agent 分阶段引入外部算力。先从公开数据任务、隔离 worker 沙箱和 credits-first 结算开始，等产品验证出真实需求后再扩成更广的算力网络。
 ---
 
 # Agent 算力分布网络 / Agent Compute Mesh
@@ -11,8 +11,8 @@ Use this skill when the local agent needs outside compute, outside tool coverage
 Technical invocation name: `$agent-compute-mesh`。  
 技术调用名：`$agent-compute-mesh`。
 
-这个 skill 面向“发布任务给分布式节点执行”这个场景。核心思路是把任务切成有边界的片段，脱敏后广播，再由远程节点在临时线程和临时沙箱里完成执行。  
-This skill is for the case where a local agent wants to publish a task to distributed nodes. The core idea is to split work into bounded fragments, redact them, broadcast them, and let remote nodes execute inside ephemeral threads and sandboxes.
+这个 skill 面向“把一部分任务交给外部算力执行”这个场景。当前更现实的路线不是直接上链，也不是直接发币，而是先把可控的公开数据任务跑通，再逐步开放到托管 worker 和社区 worker。  
+This skill is for the case where a local agent wants to send part of its workload to outside compute. The realistic path is not chain-first and not token-first. The realistic path is to make controlled public-data jobs work first, then expand toward hosted workers and finally community workers.
 
 ## 实验状态 / Experimental Status
 
@@ -21,6 +21,23 @@ This skill is for the case where a local agent wants to publish a task to distri
 - 这里的协议、代币、调度、执行隔离和结算机制都还是设计稿。 / The protocol, token model, scheduling, execution isolation, and settlement logic here are still design drafts.
 - 真正投入使用前，至少还需要独立安全审计、对抗测试、故障注入、经济学仿真和长期运行验证。 / Before any real use, it needs independent security review, adversarial testing, fault injection, economic simulation, and long-run validation.
 - 如果有人直接拿这套设计去跑，出了问题自己负责。 / If someone uses this design directly and it breaks, that is their own responsibility.
+
+## Rollout Path / 落地路径
+
+Treat this as a staged product, not a finished decentralized network.  
+把它当成分阶段产品，不要当成已经完成的去中心化网络。
+
+1. `stage-1 local`: keep execution on the local machine and validate task shape, evidence quality, and user value.  
+   `stage-1 local`：执行继续留在本机，先验证任务形状、证据质量和用户价值。
+2. `stage-2 hosted`: move approved public-data jobs to a central hosted worker service and bill with credits.  
+   `stage-2 hosted`：把合格的公开数据任务移到中心化托管 worker 服务，并用 credits 计费。
+3. `stage-3 community-workers`: open the worker pool to third parties after hosted traffic proves pricing, fraud rate, and worker utilization.  
+   `stage-3 community-workers`：等托管流量验证出定价、欺诈率和 worker 利用率后，再向第三方开放 worker 池。
+4. `stage-4 optional-chain`: add on-chain settlement only if cross-operator trust and cross-jurisdiction payments become the bottleneck.  
+   `stage-4 optional-chain`：只有当跨运营方信任和跨司法辖区结算真的变成瓶颈时，才考虑上链。
+
+Read `references/rollout-plan.md` before designing a deployment path.  
+设计部署路径前先读 `references/rollout-plan.md`。
 
 ## Roles / 角色
 
@@ -36,6 +53,25 @@ This skill supports four roles.
 4. `relay`: help headers, receipts, and packet objects stay discoverable.  
    `relay`：帮助工作头、回执和包对象持续可发现。
 
+## Allowed Work / 允许的任务类型
+
+Start with public-data jobs only.  
+第一阶段只做公开数据任务。
+
+- official docs lookup / 官方文档查证
+- issue or discussion summarization / issue 或 discussion 汇总
+- version diff extraction / 版本差异提取
+- evidence collection and citation packaging / 证据收集和引文打包
+- public web discovery and verification / 公开网页发现与验证
+
+Keep these local or hosted under operator control.  
+这几类任务继续留在本地或运营方自控托管环境。
+
+- private code review with full repository access / 需要完整仓库权限的私有代码审查
+- tasks requiring user secrets or private API keys / 需要用户密钥或私有 API key 的任务
+- customer data processing / 客户数据处理
+- tasks that can directly mutate the main workspace / 可以直接修改主工作区的任务
+
 ## When To Use / 适用时机
 
 Use this skill when any of these is true.  
@@ -46,10 +82,33 @@ Use this skill when any of these is true.
 - the task is wide enough to benefit from parallel remote facets
 - the local node is idle and can earn work credits by solving for others
 
+Read `references/job-spec.md` before deciding whether a task is small enough to outsource and valuable enough to price.  
+判断一个任务是否足够小、足够值钱、适合外包前，先读 `references/job-spec.md`。
+
 ## Task Execution Model / 任务执行模型
 
 The core execution unit is an `execution lease`.  
 核心执行单元叫 `execution lease`。
+
+The preferred task granularity is one `exploration job`, not one whole session and not one tiny search call.  
+推荐的任务粒度是一整个 `exploration job`，不是整段会话，也不是一条极小的搜索调用。
+
+An `exploration job` should contain:  
+一个 `exploration job` 应该包含：
+
+- one problem statement / 一个问题陈述
+- one host or product family / 一个宿主或产品族
+- one version band / 一个版本带
+- one evidence requirement / 一个证据要求
+- one search budget / 一个搜索预算
+- one deadline / 一个截止时间
+
+Split one job into these facet classes when needed.  
+必要时把一个 job 拆成这些 facet 类型。
+
+- `discovery` / 找候选线索
+- `validation` / 核对官方依据和版本匹配
+- `synthesis` / 生成可读结果草案
 
 When a node accepts work, it must follow this flow.  
 节点接单后必须按这个流程执行。
@@ -92,13 +151,26 @@ Read `references/travelnet-protocol.md` for the full wire shape. The short flow 
 6. `WORK_ATTEST`
 7. `WORK_SETTLEMENT`
 
-## Token Model / 代币模型
+## Settlement Model / 结算模型
 
-The protocol-native work credit is `TRV`.  
-协议原生工作量凭证叫 `TRV`。
+Use `credits-first` settlement in product stages 1 to 3.  
+在产品的第 1 到第 3 阶段，使用 `credits-first` 结算。
 
-Use this accounting shape.  
-记账形状如下。
+- user-facing billing should be credits, subscriptions, or hosted usage meters / 面向用户的计费先用 credits、订阅或托管用量表
+- worker payouts should come from a signed internal ledger / worker 侧报酬先走签名内部账本
+- reward should still be locked before assignment / 派单前仍然要锁定奖励
+- validator and relay fees should still be explicit / validator 和 relay 费用仍然要显式记录
+
+Treat `TRV` as a future protocol unit, not the current product surface.  
+把 `TRV` 当成未来协议单位，不要把它当成当前产品界面主角。
+
+Only consider a chain-backed native token after hosted traffic already proves demand, pricing, and fraud control.  
+只有当托管流量已经证明需求、定价和欺诈控制成立之后，再考虑链上原生代币。
+
+### Future Protocol Unit / 未来协议单位
+
+If a later network layer needs a protocol-native unit, use this accounting shape.  
+如果后续网络层真的需要协议原生单位，可以用这套记账形状。
 
 - `reward_lock`: the demander escrows the reward before assignment. / `reward_lock`：发单方派单前先锁定奖励。
 - `join_bond`: every new node posts stake before it can receive starter credits or work. / `join_bond`：每个新节点在拿启动额度或接任务前先质押。
@@ -169,6 +241,8 @@ Remote work can inform the final answer, patch, or decision. Local acceptance re
 ## References / 参考文件
 
 - `references/travelnet-protocol.md`
+- `references/rollout-plan.md`
+- `references/job-spec.md`
 
 ## Verification / 复核
 
@@ -180,3 +254,12 @@ Before you accept or settle remote work, re-check:
 - the result or patch still matches the local constraints / 结果或补丁是否仍然匹配本地约束
 - the billing receipt matches the accepted work / 计费回执是否匹配被接受的工作
 - no leakage or replay signal appears in the packet trail / 包轨迹里是否没有泄露或重放信号
+
+Track these rollout metrics before opening the next stage.  
+进入下一阶段前，跟踪这些指标。
+
+- user willingness to pay / 用户是否愿意付费
+- median job cost / 单个 job 的中位成本
+- accepted evidence quality / 被接受证据的质量
+- next-turn reuse rate / 下一轮任务复用率
+- fraud or mismatch rate / 欺诈或不匹配率
